@@ -128,7 +128,6 @@
             const [step, setStep] = useState(1);
             const [submitting, setSubmitting] = useState(false);
             const [loadingText, setLoadingText] = useState("שומר נתונים...");
-            const [downloadUrl, setDownloadUrl] = useState(null); // שמירת הקישור להורדה
             const [errors, setErrors] = useState({ idNumber: '', phone: '', bankAccount: '' });
             const [forceBankSubmit, setForceBankSubmit] = useState(false);
 
@@ -145,7 +144,7 @@
             useEffect(() => {
                 let interval;
                 if (submitting) {
-                    const texts = ["שומר נתונים...", "מייצר שטר הלוואה...", "שולח מייל...", "כמעט סיימנו..."];
+                    const texts = ["שומר נתונים...", "מפיק שטר הלוואה...", "שולח מייל...", "כמעט סיימנו..."];
                     let i = 0;
                     interval = setInterval(() => {
                         i = (i + 1) % texts.length;
@@ -192,34 +191,29 @@
                 setSubmitting(true);
                 setLoadingText("מתחבר לשרת...");
 
-                // איחוד הכתובת למחרוזת אחת לפני השליחה
                 const fullAddress = `${formData.street} ${formData.houseNum}, ${formData.city}`;
                 const dataToSend = { ...formData, address: fullAddress };
                 
                 if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "PASTE_YOUR_URL_HERE") {
                     try {
-                        // בגלל השינוי בשרת אנחנו משתמשים ב-no-cors אבל מצפים שהקישור יגיע במייל בכל מקרה
-                        // אבל כדי לקבל את ה-URL בלקוח אנו צריכים CORS רגיל. גוגל סקריפט תומך בזה אם ה-ContentService מוגדר נכון.
-                        // ננסה לקרוא את התגובה.
-                        const response = await fetch(GOOGLE_SCRIPT_URL, {
+                        // שיטה: "שגר ושכח" (no-cors)
+                        // אנחנו לא מחכים לתשובה אלא מניחים הצלחה אחרי 2.5 שניות
+                        await fetch(GOOGLE_SCRIPT_URL, {
                             method: "POST",
+                            mode: "no-cors",
+                            headers: { "Content-Type": "application/json" },
                             body: JSON.stringify(dataToSend)
                         });
                         
-                        const result = await response.json();
-                        
-                        if (result.status === 'success') {
-                            setDownloadUrl(result.downloadUrl); // שמירת הקישור
+                        setTimeout(() => {
+                            setSubmitting(false);
                             setStep(2);
-                        } else {
-                            alert("אירעה שגיאה: " + result.message);
-                        }
+                        }, 2500);
+
                     } catch (error) {
+                        // בשיטה הזו גם שגיאות נתפסות וממשיכים הלאה
                         console.error("Error", error);
-                        // במקרה של שגיאת רשת (כמו CORS בנטפרי לפעמים), נעבור לדף הצלחה בכל זאת
-                        // כי המייל כנראה נשלח, פשוט הדפדפן חסם את התשובה עם הלינק.
                         setStep(2); 
-                    } finally {
                         setSubmitting(false);
                     }
                 } else {
@@ -321,21 +315,6 @@
                                         שטר ההלוואה נשלח למייל: <span className="font-bold">{formData.email}</span>.
                                     </p>
                                     
-                                    {/* כפתור הורדה מיידית - מופיע רק אם השרת החזיר קישור */}
-                                    {downloadUrl && (
-                                        <div className="mb-8">
-                                            <a 
-                                                href={downloadUrl} 
-                                                target="_blank" 
-                                                className="bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold py-4 px-10 rounded-full shadow-lg transition-transform transform hover:scale-105 inline-flex items-center gap-3"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                                הורד את שטר ההלוואה עכשיו
-                                            </a>
-                                            <p className="text-sm text-gray-500 mt-2">הקובץ מוכן להדפסה</p>
-                                        </div>
-                                    )}
-
                                     <div className="bg-slate-50 border p-4 text-center rounded max-w-md mx-auto">
                                         <p className="text-sm text-slate-700">
                                             יש להדפיס את השטר, למלא את הפרטים החסרים (תשלומים ותאריכים), לחתום ולהחתים את הערבים, ולהעביר את המקור למשרדי הגמ"ח.
@@ -345,7 +324,7 @@
                             )}
                         </div>
                     </div>
-                    <div className="mt-6 text-slate-400 text-xs">© כל הזכויות שמורות לגמ"ח קרן אסתר</div>
+                    <div className="mt-6 text-slate-400 text-xs">נבנה ע"י KobiPhoto עבור קרן אסתר חיפה</div>
                 </div>
             );
         };
