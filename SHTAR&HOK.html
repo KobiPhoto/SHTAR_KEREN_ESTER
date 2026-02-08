@@ -96,6 +96,7 @@
 
         // --- Main App ---
         const App = () => {
+            // *** הדבק כאן את הכתובת החדשה של ה-APP SCRIPT ***
             const GOOGLE_SCRIPT_URL = "PASTE_YOUR_URL_HERE"; 
 
             const [step, setStep] = useState(1);
@@ -122,7 +123,6 @@
             // האזנה לאישור מנדרים פלוס
             useEffect(() => {
                 const handleMessage = (event) => {
-                    // כאן בודקים אם ההודעה הגיעה מנדרים (הלוגיקה תלויה במימוש שלהם, לרוב זה עובד)
                     if (event.data && (event.data.Name === 'NedarimPlus' || event.data === 'TransactionSuccess')) {
                         setIsNedarimDone(true);
                         setShowNedarim(false);
@@ -163,16 +163,21 @@
                 const fullAddress = `${formData.street} ${formData.houseNum}, ${formData.city}`;
                 const dataToSend = { ...formData, address: fullAddress, hebrewDate: hebrewDate };
                 
-                try {
-                    await fetch(GOOGLE_SCRIPT_URL, {
-                        method: "POST",
-                        mode: "no-cors",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(dataToSend)
-                    });
-                    setTimeout(() => { setSubmitting(false); setStep(2); }, 2500);
-                } catch (error) {
-                    setStep(2); setSubmitting(false);
+                if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "PASTE_YOUR_URL_HERE") {
+                    try {
+                        await fetch(GOOGLE_SCRIPT_URL, {
+                            method: "POST",
+                            mode: "no-cors",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(dataToSend)
+                        });
+                        setTimeout(() => { setSubmitting(false); setStep(2); }, 2500);
+                    } catch (error) {
+                        setStep(2); setSubmitting(false);
+                    }
+                } else {
+                    alert("חסר קישור לשרת");
+                    setSubmitting(false);
                 }
             };
 
@@ -249,7 +254,6 @@
                                                     להקמת הוראת קבע (נדרים פלוס)
                                                 </button>
                                                 
-                                                {/* כפתור חירום למקרה שהאוטומציה לא עובדת */}
                                                 <div className="mt-4 text-xs text-gray-500">
                                                     <label className="flex items-center justify-center gap-2 cursor-pointer">
                                                         <input type="checkbox" onChange={(e) => setIsNedarimDone(e.target.checked)} />
@@ -264,16 +268,16 @@
                                             </div>
                                         )}
                                         
-                                        {/* ה-IFRAME של נדרים */}
+                                        {/* ה-IFRAME של נדרים - מוגדל + 4 ש"ח + ת"ז */}
                                         {showNedarim && (
                                             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                                                <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[80vh] flex flex-col">
-                                                    <div className="p-2 border-b flex justify-between items-center">
-                                                        <span className="font-bold">נדרים פלוס</span>
-                                                        <button type="button" onClick={() => setShowNedarim(false)} className="text-red-500 font-bold px-2">סגור X</button>
+                                                <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-[90vh] flex flex-col">
+                                                    <div className="p-2 border-b flex justify-between items-center bg-gray-100">
+                                                        <span className="font-bold text-gray-700">נדרים פלוס - הקמת הוראה</span>
+                                                        <button type="button" onClick={() => setShowNedarim(false)} className="text-red-500 font-bold px-4 py-1 hover:bg-red-50 rounded">סגור X</button>
                                                     </div>
                                                     <iframe 
-                                                        src={`https://www.matara.pro/nedarimplus/online/?S=jKAi&Amount=${formData.monthlyPayment}&ClientName=${formData.firstName} ${formData.lastName}`}
+                                                        src={`https://www.matara.pro/nedarimplus/online/?S=jKAi&Amount=${parseInt(formData.monthlyPayment) + 4}&ClientName=${formData.firstName} ${formData.lastName}&Zeout=${formData.idNumber}`}
                                                         className="w-full h-full border-none"
                                                     ></iframe>
                                                 </div>
@@ -284,7 +288,7 @@
                                     <div className="mt-8 flex justify-end">
                                         <button 
                                             type="submit" 
-                                            disabled={!isNedarimDone || submitting} // הכפתור נעול עד שנדרים מאושר
+                                            disabled={!isNedarimDone || submitting} 
                                             className={`font-bold py-4 px-12 rounded shadow transition-all flex items-center gap-2 ${(!isNedarimDone || submitting) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-slate-800 hover:bg-slate-900 text-white'}`}
                                         >
                                             {submitting ? 'שולח...' : 'שלח בקשה סופית'} 
@@ -305,7 +309,7 @@
                             )}
                         </div>
                     </div>
-                    <div className="mt-6 text-slate-400 text-xs">© כל הזכויות שמורות לגמ"ח קרן אסתר</div>
+                    <div className="mt-6 text-slate-400 text-xs">נבנה עבור קרן אסתר</div>
                 </div>
             );
         };
