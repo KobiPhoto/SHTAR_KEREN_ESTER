@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>גמ"ח קרן אסתר - הקמת הלוואה</title>
+    <title>גמ"ח קרן אסתר - בקשת הלוואה</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -35,9 +35,7 @@
         const { useState, useEffect } = React;
 
         // --- Helpers ---
-        const getHebrewDate = () => {
-            return new Intl.DateTimeFormat('he-IL', { calendar: 'hebrew', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
-        };
+        const getHebrewDate = () => new Intl.DateTimeFormat('he-IL', { calendar: 'hebrew', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
 
         const numToHebrew = (num) => {
             if (!num) return "";
@@ -85,7 +83,7 @@
 
         // --- Main App ---
         const App = () => {
-            // *** עדכן כאן את הכתובת החדשה של ה-APP SCRIPT ***
+            // *** עדכן כאן את הכתובת של ה-APP SCRIPT שלך ***
             const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqay2xSyjmxtuCY6xPmAC25Ztn7VVe8L31ZmigatHXpvazyuVDJj6cvuwsqzJLHYW_1w/exec"; 
 
             const [step, setStep] = useState(1);
@@ -124,7 +122,8 @@
                 });
             };
 
-            const handleSubmitForm = async () => {
+            const handleSubmitForm = async (e) => {
+                e.preventDefault(); // מניעת רענון דף
                 setSubmitting(true);
                 
                 const dataToSend = { 
@@ -140,9 +139,14 @@
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(dataToSend)
                     });
-                    setTimeout(() => { setSubmitting(false); setStep(3); }, 2500);
+                    // בגלל no-cors, פשוט נחכה קצת ונניח שהצליח
+                    setTimeout(() => { 
+                        setSubmitting(false); 
+                        setStep(2); // עבור למסך הסיום
+                    }, 2500);
                 } catch (error) {
-                    setStep(3); setSubmitting(false);
+                    setStep(2); // גם אם יש שגיאה, נמשיך למסך הסיום
+                    setSubmitting(false);
                 }
             };
 
@@ -154,19 +158,11 @@
                         <h1 className="text-3xl font-bold text-slate-800">קרן אסתר - בקשת הלוואה</h1>
                     </div>
 
-                    <div className="w-full max-w-6xl bg-white rounded shadow-2xl overflow-hidden border-t-4 border-blue-800 animate-fade-in">
-                        
-                        {/* Progress Bar */}
-                        <div className="flex w-full bg-slate-50 border-b border-slate-200">
-                            <div className={`flex-1 py-3 text-center text-sm font-bold ${step === 1 ? 'text-blue-800 bg-white border-l' : 'text-gray-400'}`}>1. פרטים</div>
-                            <div className={`flex-1 py-3 text-center text-sm font-bold ${step === 2 ? 'text-blue-800 bg-white border-l' : 'text-gray-400'}`}>2. הוראת קבע</div>
-                            <div className={`flex-1 py-3 text-center text-sm font-bold ${step === 3 ? 'text-blue-800 bg-white' : 'text-gray-400'}`}>3. סיום</div>
-                        </div>
-
+                    <div className="w-full max-w-6xl bg-white rounded shadow-2xl overflow-hidden border-t-4 border-blue-800">
                         <div className="p-8">
                             {/* שלב 1: טופס */}
                             {step === 1 && (
-                                <form onSubmit={(e) => { e.preventDefault(); setStep(2); }}>
+                                <form onSubmit={handleSubmitForm}> {/* שינוי כאן: קריאה ישירה לפונקציית השליחה */}
                                     <div className="flex items-center justify-between mb-6">
                                         <h2 className="text-xl font-bold text-slate-800 border-r-4 border-blue-800 pr-3">פרטי הלוואה ולווה</h2>
                                         {formData.amount && (
@@ -215,16 +211,15 @@
                                     </div>
                                     <div className="mt-8 flex justify-end">
                                         <button type="submit" className="bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-12 rounded shadow transition-all">
-                                            המשך להקמת הו"ק &larr;
+                                            שלח בקשה &larr;
                                         </button>
                                     </div>
                                 </form>
                             )}
 
-
-                            {/* שלב 3: סיום */}
-                            {step === 3 && (
-                                <div className="max-w-2xl mx-auto text-center py-6 animate-fade-in">
+                            {/* שלב 2: סיום (החלפנו את שלב 3 להיות 2) */}
+                            {step === 2 && (
+                                <div className="max-w-2xl mx-auto text-center py-6">
                                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                                         <svg className="text-green-600 w-10 h-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
                                     </div>
@@ -234,14 +229,14 @@
                                     </p>
                                     <div className="bg-slate-50 border p-4 text-center rounded max-w-md mx-auto">
                                         <p className="text-sm text-slate-700">
-                                            הוראת הקבע נקלטה. כעת יש להדפיס את השטר מהמייל, לחתום ולהעביר את המקור.
+                                            כעת יש להדפיס את השטר מהמייל, לחתום ולהעביר את המקור.
                                         </p>
                                     </div>
                                 </div>
                             )}
                         </div>
                     </div>
-                    <div className="mt-6 text-slate-400 text-xs">© נבנה עבור גמ"ח קרן אסתר</div>
+                    <div className="mt-6 text-slate-400 text-xs">© כל הזכויות שמורות לגמ"ח קרן אסתר</div>
                 </div>
             );
         };
