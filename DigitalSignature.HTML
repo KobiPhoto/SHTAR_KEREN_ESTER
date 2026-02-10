@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>קרן אסתר - חתימה דיגיטלית</title>
+    <title>קרן אסתר</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -81,7 +81,7 @@
 
             return (
                 <div className="mt-4">
-                    <label className="block text-gray-700 text-sm font-bold mb-2">חתימה (חובה לחתום בתוך המסגרת)</label>
+                    <label className="block text-gray-700 text-sm font-bold mb-2">חתימה בכתב יד (יש לחתום בתוך המסגרת)</label>
                     <div className="border-2 border-dashed border-gray-400 rounded-lg overflow-hidden bg-white relative" style={{height: '180px'}}>
                         <canvas ref={canvasRef} style={{width: '100%', height: '100%'}}
                             onMouseDown={start} onMouseMove={draw} onMouseUp={end} onMouseLeave={end}
@@ -265,8 +265,8 @@
             return (
                 <div className="min-h-screen bg-slate-100 flex flex-col items-center py-6 px-4">
                     <div className="text-center mb-6 w-full max-w-5xl">
-                        <h1 className="text-3xl font-bold text-slate-800">קרן אסתר - חתימה דיגיטלית</h1>
-                        <p className="text-slate-500 text-sm">ללא הוראת קבע בנדרים פלוס</p>
+                        <h1 className="text-3xl font-bold text-slate-800">קרן אסתר - ע.ר. 580021475</h1>
+                        <p className="text-slate-500 text-sm">שטר הלוואה בחתימה דיגיטלית</p>
                     </div>
 
                     <div className="w-full max-w-4xl bg-white rounded shadow-xl overflow-hidden border-t-4 border-blue-800 p-8">
@@ -333,8 +333,11 @@
                                 <div className="mt-6">
                                     <h3 className="font-bold text-gray-700 mb-2">הצהרה וחתימה</h3>
                                     <div className="legal-text">
-                                        הנני מאשר/ת בזאת כי כל הפרטים שמסרתי בטופס זה הם נכונים ומדויקים. <br/>
-                                        ידוע לי כי קבלת ההלוואה כפופה לאישור הנהלת הגמ"ח ולחתימת ערבים כנדרש. <br/>
+                                       הנני מאשר בחתימתי כי ההלוואה היא ע"פ תקנון הגמ"ח על כל פרטיו.<br/>
+הנני מאשר שכל בעיה שתתעורר בגין שטר זה תתברר ע"י בית דין שיקבע ע"י הנהלת הגמ"ח.<br/>
+הנני מאשר שלא אוכל לטעון 'פרעתי' כל זמן שלא אוכיח זאת ע"י שובר מהנהלת הגמ"ח.<br/>
+הנני מקבל על עצמי לשלם את כל ההוצאות שיגרמו עקב אי תשלום החוב בזמנו כולל שכירות אדם מיוחד שיופיע בשם הגמ"ח בפני בי"ד.<br/>
+                                        ידוע לי כי קבלת ההלוואה כפופה לאישור הנהלת הגמ"ח. <br/>
                                         אני מתחייב/ת לעמוד בתנאי ההחזר כפי שייקבעו, וכי החתימה הדיגיטלית להלן מחייבת אותי לכל דבר ועניין כאילו נחתמה בכתב ידי.
                                     </div>
                                 </div>
