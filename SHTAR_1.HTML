@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>קרן אסתר - הלוואה דיגיטלית</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Heebo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #F0F2F5; /* Off-White Background */
+            color: #1E293B;
+        }
+        
+        /* Monospace for numbers (Financial look) */
+        .font-mono-nums {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        canvas { touch-action: none; background: #fff; cursor: crosshair; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+        /* Smooth inputs */
+        .input-fintech {
+            transition: all 0.2s ease-in-out;
+        }
+        .input-fintech:focus {
+            box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1); /* Navy Blue Shadow */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
+
+        // --- Signature Component (Unchanged Logic, Updated UI) ---
+        const SignaturePad = ({ onEnd }) => {
+            const canvasRef = useRef(null);
+            const [isDrawing, setIsDrawing] = useState(false);
+
+            useEffect(() => {
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                canvas.width = canvas.offsetWidth * 2;
+                canvas.height = canvas.offsetHeight * 2;
+                ctx.scale(2, 2);
+                ctx.lineCap = 'round';
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#1E3A8A'; // Navy Blue ink
+            }, []);
+
+            const getPos = (e) => {
+                const canvas = canvasRef.current;
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            };
+
+            const start = (e) => {
+                setIsDrawing(true);
+                const ctx = canvasRef.current.getContext('2d');
+                const pos = getPos(e);
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+            };
+
+            const draw = (e) => {
+                if (!isDrawing) return;
+                e.preventDefault();
+                const ctx = canvasRef.current.getContext('2d');
+                const pos = getPos(e);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+            };
+
+            const end = () => {
+                if (!isDrawing) return;
+                setIsDrawing(false);
+                const dataUrl = canvasRef.current.toDataURL("image/png");
+                onEnd(dataUrl.replace("data:image/png;base64,", ""));
+            };
+
+            const clear = (e) => {
+                e.preventDefault();
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                onEnd(null);
+            };
+
+            return (
+                <div className="relative h-full flex flex-col">
+                    <div className="flex justify-between items-center mb-3">
+                        <label className="text-slate-700 text-sm font-bold flex items-center gap-2">
+                            <svg className="w-4 h-4 text-[#065F46]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                            חתימה דיגיטלית
+                        </label>
+                        <button onClick={clear} className="text-xs font-medium text-red-500 hover:text-red-700 transition-colors">
+                            נקה לוח
+                        </button>
+                    </div>
+                    <div className="flex-grow border border-slate-200 bg-[#F8FAFC] rounded-[16px] overflow-hidden relative cursor-crosshair hover:border-[#1E3A8A] transition-colors">
+                        <canvas ref={canvasRef} style={{width: '100%', height: '100%'}}
+                            onMouseDown={start} onMouseMove={draw} onMouseUp={end} onMouseLeave={end}
+                            onTouchStart={start} onTouchMove={draw} onTouchEnd={end} />
+                        <div className="absolute bottom-2 right-2 text-[10px] text-slate-400 pointer-events-none select-none">
+                            יש לחתום בתוך המסגרת
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Logic Helpers (Unchanged) ---
+        const getHebrewDate = () => new Intl.DateTimeFormat('he-IL', { calendar: 'hebrew', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+
+        const numToHebrew = (num) => {
+            if (!num) return "";
+            const n = parseInt(num);
+            const units = ["", "אלף", "אלפיים", "שלושת אלפים", "ארבעת אלפים", "חמשת אלפים", "ששת אלפים", "שבעת אלפים", "שמונת אלפים", "תשעת אלפים", "עשרת אלפים"];
+            if (n >= 1000 && n <= 10000 && n % 1000 === 0) return units[n / 1000] + " שקלים";
+            if (n === 500) return "חמש מאות שקלים";
+            return ""; 
+        };
+
+        const ISRAELI_BANKS = [
+            { code: '12', name: 'בנק הפועלים' }, { code: '10', name: 'בנק לאומי' }, { code: '11', name: 'בנק דיסקונט' },
+            { code: '52', name: 'בנק פאג"י' }, { code: '20', name: 'בנק מזרחי טפחות' }, { code: '17', name: 'בנק מרכנתיל' },
+            { code: '31', name: 'הבנק הבינלאומי' }, { code: '09', name: 'בנק הדואר' }, { code: '04', name: 'בנק יהב' }
+        ];
+
+        const isValidIsraeliID = (id) => {
+            let strId = String(id).trim();
+            if (strId.length > 9 || strId.length < 5) return false;
+            strId = strId.padStart(9, '0');
+            return Array.from(strId, Number).reduce((counter, digit, i) => {
+                const step = digit * ((i % 2) + 1);
+                return counter + (step > 9 ? step - 9 : step);
+            }) % 10 === 0;
+        };
+
+        const isValidMobile = (phone) => /^05\d{8}$/.test(phone);
+
+        const validateSpecificBank = (bankString, accountNum) => {
+            if (!accountNum) return ''; 
+            const match = bankString.match(/\((\d{2})\)/);
+            if (!match) return ''; 
+            const bankCode = match[1];
+            const len = accountNum.length;
+            const isNumeric = /^\d+$/.test(accountNum);
+            if (!isNumeric) return 'מספר חשבון חייב להכיל ספרות בלבד';
+            switch (bankCode) {
+                case '12': if (len !== 6) return 'בבנק הפועלים מס\' החשבון חייב להיות בן 6 ספרות בדיוק'; break;
+                case '52': if (len !== 6) return 'בבנק פאג"י מס\' החשבון חייב להיות בן 6 ספרות בדיוק'; break;
+                case '10': if (len < 7 || len > 13) return 'בבנק לאומי מס\' החשבון אינו תקין (אורך שגוי)'; break;
+                case '11': if (len < 7 || len > 13) return 'בבנק דיסקונט מס\' החשבון אינו תקין (אורך שגוי)'; break;
+                default: if (len < 6 || len > 13) return 'מספר חשבון לא תקין';
+            }
+            return '';
+        };
+
+        // --- UI Components (New Design) ---
+        const InputField = ({ label, type, name, value, onChange, onBlur, placeholder, required = true, error }) => (
+            <div className="w-full">
+                <label className="block text-slate-600 text-[13px] font-semibold mb-1.5">{label}</label>
+                <input 
+                    type={type} 
+                    name={name} 
+                    value={value} 
+                    onChange={onChange} 
+                    onBlur={onBlur} 
+                    className={`input-fintech w-full px-4 py-3 bg-[#F8FAFC] border ${error ? 'border-red-400 bg-red-50' : 'border-slate-200'} rounded-xl text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:border-[#1E3A8A] focus:bg-white font-mono-nums`} 
+                    placeholder={placeholder} 
+                    required={required} 
+                />
+                {error && <p className="text-red-500 text-xs mt-1 font-medium">{error}</p>}
+            </div>
+        );
+
+        const SelectField = ({ label, name, value, onChange, options, required = true }) => (
+            <div className="w-full">
+                <label className="block text-slate-600 text-[13px] font-semibold mb-1.5">{label}</label>
+                <div className="relative">
+                    <select 
+                        name={name} 
+                        value={value} 
+                        onChange={onChange} 
+                        className="input-fintech w-full px-4 py-3 bg-[#F8FAFC] border border-slate-200 rounded-xl text-slate-800 text-sm focus:outline-none focus:border-[#1E3A8A] focus:bg-white appearance-none" 
+                        required={required}
+                    >
+                        <option value="" disabled>בחר מהרשימה...</option>
+                        {options.map((opt, idx) => <option key={idx} value={`${opt.name} (${opt.code})`}>{opt.name} ({opt.code})</option>)}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-slate-500">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                </div>
+            </div>
+        );
+
+        // --- Main App ---
+        const App = () => {
+            const GOOGLE_SCRIPT_URL = "PASTE_YOUR_NEW_URL_HERE"; // *** עדכן כאן את הקישור שלך ***
+
+            const [step, setStep] = useState(1);
+            const [submitting, setSubmitting] = useState(false);
+            const [signatureData, setSignatureData] = useState(null);
+            const [errors, setErrors] = useState({ idNumber: '', phone: '', bankAccount: '' });
+            const [forceBankSubmit, setForceBankSubmit] = useState(false);
+
+            const [formData, setFormData] = useState({
+                amount: '', amountWords: '', 
+                firstName: '', lastName: '', idNumber: '', 
+                street: '', houseNum: '', city: 'חיפה',
+                phone: '', additionalPhone: '', email: '', 
+                bankName: '', bankBranch: '', bankAccount: ''
+            });
+
+            const handleChange = (e) => {
+                const { name, value } = e.target;
+                setFormData(prev => {
+                    const newData = { ...prev, [name]: value };
+                    if (name === 'amount') {
+                        const words = numToHebrew(value);
+                        if (words) newData.amountWords = words;
+                    }
+                    return newData;
+                });
+                if (errors[name]) setErrors({ ...errors, [name]: '' });
+                if (name === 'bankName' || name === 'bankAccount') setForceBankSubmit(false);
+                if (name === 'bankName' && formData.bankAccount) {
+                    const bankErr = validateSpecificBank(value, formData.bankAccount);
+                    setErrors(prev => ({ ...prev, bankAccount: bankErr }));
+                }
+            };
+
+            const handleBlur = (e) => {
+                const { name, value } = e.target;
+                let errorMsg = '';
+                if (name === 'idNumber' && value && !isValidIsraeliID(value)) errorMsg = 'ת"ז לא תקינה';
+                else if (name === 'phone' && value && !isValidMobile(value)) errorMsg = 'נייד לא תקין';
+                else if (name === 'bankAccount' && value) {
+                    if (formData.bankName) errorMsg = validateSpecificBank(formData.bankName, value);
+                    else if (!/^\d{6,13}$/.test(value)) errorMsg = 'חשבון לא תקין';
+                }
+                setErrors(prev => ({ ...prev, [name]: errorMsg }));
+            };
+
+            const handleSubmitForm = async (e) => {
+                e.preventDefault();
+                
+                const idErr = (!isValidIsraeliID(formData.idNumber)) ? 'שגיאה' : '';
+                const phoneErr = (!isValidMobile(formData.phone)) ? 'שגיאה' : '';
+                const bankErr = validateSpecificBank(formData.bankName, formData.bankAccount);
+                setErrors({ idNumber: idErr, phone: phoneErr, bankAccount: bankErr });
+
+                if (idErr || phoneErr) return;
+                if (bankErr && !forceBankSubmit) if(bankErr) return;
+
+                if (!signatureData) {
+                    alert("נא לחתום במשבצת החתימה");
+                    return;
+                }
+
+                setSubmitting(true);
+                
+                const dataToSend = { 
+                    ...formData, 
+                    address: `${formData.street} ${formData.houseNum}, ${formData.city}`,
+                    hebrewDate: getHebrewDate(),
+                    signature: signatureData
+                };
+                
+                try {
+                    await fetch(GOOGLE_SCRIPT_URL, {
+                        method: "POST",
+                        mode: "no-cors",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(dataToSend)
+                    });
+                    setTimeout(() => { setSubmitting(false); setStep(2); }, 3000);
+                } catch (error) {
+                    setStep(2); setSubmitting(false);
+                }
+            };
+
+            return (
+                <div className="min-h-screen py-10 px-4 md:px-8">
+                    
+                    {/* Header */}
+                    <div className="max-w-6xl mx-auto mb-10 text-center md:text-right flex flex-col md:flex-row justify-between items-center">
+                        <div>
+                            <h1 className="text-3xl font-extrabold text-[#1E3A8A] tracking-tight">קרן אסתר</h1>
+                            <p className="text-slate-500 font-medium mt-1">מערכת הלוואות דיגיטלית מאובטחת</p>
+                        </div>
+                        <div className="mt-4 md:mt-0 bg-white px-4 py-2 rounded-full shadow-sm text-sm text-[#065F46] font-bold flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-[#065F46] animate-pulse"></span>
+                            טופס מקוון
+                        </div>
+                    </div>
+
+                    {/* Main Content - Bento Grid Layout */}
+                    <div className="max-w-6xl mx-auto">
+                        {step === 1 ? (
+                            <form onSubmit={handleSubmitForm} className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                                
+                                {/* Card 1: Loan Details (Highlight) */}
+                                <div className="bg-white p-6 rounded-[20px] shadow-sm md:col-span-12 lg:col-span-4 border-t-4 border-[#1E3A8A] flex flex-col justify-between">
+                                    <div>
+                                        <h2 className="text-lg font-bold text-[#1E3A8A] mb-4 flex items-center gap-2">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            פרטי ההלוואה
+                                        </h2>
+                                        <div className="space-y-4">
+                                            <InputField label="סכום מבוקש (ש&quot;ח)" name="amount" value={formData.amount} onChange={handleChange} placeholder="לדוגמה: 5000" type="number" />
+                                            <InputField label="סכום במילים (אוטומטי)" name="amountWords" value={formData.amountWords} onChange={handleChange} placeholder="" type="text" />
+                                        </div>
+                                    </div>
+                                    <div className="mt-6 bg-[#F0F9FF] p-4 rounded-xl border border-blue-100">
+                                        <p className="text-xs text-blue-800 leading-relaxed">
+                                            * ההלוואה תינתן בכפוף לתקנון הגמ"ח.
+                                            <br/>* החזר ההלוואה יתבצע בצ'קים או בהוראת קבע.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Card 2: Personal Info */}
+                                <div className="bg-white p-6 rounded-[20px] shadow-sm md:col-span-12 lg:col-span-8">
+                                    <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                        <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                        פרטים אישיים
+                                    </h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <InputField label="שם פרטי" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="" type="text" />
+                                        <InputField label="שם משפחה" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="" type="text" />
+                                        <InputField label="תעודת זהות" name="idNumber" value={formData.idNumber} onChange={handleChange} onBlur={handleBlur} error={errors.idNumber} placeholder="" type="text" />
+                                        <InputField label="טלפון נייד" name="phone" value={formData.phone} onChange={handleChange} onBlur={handleBlur} error={errors.phone} placeholder="" type="tel" />
+                                        <div className="md:col-span-2">
+                                            <InputField label="כתובת דואר אלקטרוני" name="email" value={formData.email} onChange={handleChange} placeholder="" type="email" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Card 3: Address & Bank */}
+                                <div className="bg-white p-6 rounded-[20px] shadow-sm md:col-span-12 lg:col-span-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        {/* Address Column */}
+                                        <div>
+                                            <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                                <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                                כתובת מגורים
+                                            </h2>
+                                            <div className="space-y-4">
+                                                <div className="grid grid-cols-3 gap-3">
+                                                    <div className="col-span-2">
+                                                        <InputField label="רחוב" name="street" value={formData.street} onChange={handleChange} placeholder="" type="text" />
+                                                    </div>
+                                                    <InputField label="מס' בית" name="houseNum" value={formData.houseNum} onChange={handleChange} placeholder="" type="text" />
+                                                </div>
+                                                <InputField label="עיר" name="city" value={formData.city} onChange={handleChange} placeholder="" type="text" />
+                                            </div>
+                                        </div>
+
+                                        {/* Bank Column */}
+                                        <div className="md:border-r md:border-slate-100 md:pr-8">
+                                            <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                                <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
+                                                פרטי חשבון (להפקדה)
+                                            </h2>
+                                            <div className="space-y-4">
+                                                <SelectField label="בנק" name="bankName" value={formData.bankName} onChange={handleChange} options={ISRAELI_BANKS} />
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <InputField label="סניף" name="bankBranch" value={formData.bankBranch} onChange={handleChange} placeholder="" type="text" />
+                                                    <InputField label="מס' חשבון" name="bankAccount" value={formData.bankAccount} onChange={handleChange} onBlur={handleBlur} error={errors.bankAccount} placeholder="" type="text" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Card 4: Signature */}
+                                <div className="bg-white p-6 rounded-[20px] shadow-sm md:col-span-12 lg:col-span-4 flex flex-col">
+                                    <SignaturePad onEnd={setSignatureData} />
+                                </div>
+
+                                {/* Submit Button Area */}
+                                <div className="md:col-span-12 mt-4 flex justify-center">
+                                    <button 
+                                        type="submit" 
+                                        disabled={submitting} 
+                                        className={`w-full md:w-auto bg-[#1E3A8A] hover:bg-[#1e40af] text-white font-bold py-4 px-16 rounded-full shadow-lg shadow-blue-900/20 text-lg transition-all transform hover:scale-[1.02] flex items-center justify-center gap-3 ${submitting ? 'opacity-70 cursor-wait' : ''}`}
+                                    >
+                                        {submitting ? (
+                                            <>
+                                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                                מעבד נתונים...
+                                            </>
+                                        ) : 'שלח בקשה חתומה'}
+                                    </button>
+                                </div>
+
+                            </form>
+                        ) : (
+                            // Success Screen
+                            <div className="bg-white p-12 rounded-[30px] shadow-sm max-w-2xl mx-auto text-center border-t-8 border-[#065F46]">
+                                <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <svg className="w-12 h-12 text-[#065F46]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
+                                </div>
+                                <h2 className="text-3xl font-extrabold text-slate-900 mb-4">הטופס התקבל בהצלחה!</h2>
+                                <p className="text-lg text-slate-600 mb-8 max-w-md mx-auto">
+                                    תודה רבה, {formData.firstName}.<br/>
+                                    שטר ההלוואה החתום נשלח כעת לכתובת המייל שלך: 
+                                    <span className="font-bold text-[#1E3A8A] block mt-1">{formData.email}</span>
+                                </p>
+                                <div className="bg-[#F0F2F5] p-6 rounded-2xl text-right">
+                                    <h3 className="font-bold text-[#1E3A8A] mb-2 flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        הנחיות להמשך:
+                                    </h3>
+                                    <ul className="text-sm text-slate-700 space-y-2 list-disc list-inside">
+                                        <li>בדוק את תיבת המייל (כולל ספאם).</li>
+                                        <li>הדפס את הקובץ המצורף.</li>
+                                        <li>החתם את הערבים הנדרשים בכתב יד.</li>
+                                        <li>העבר את המקור למשרדי הגמ"ח.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    
+                    <div className="mt-12 text-center text-slate-400 text-xs font-mono-nums">
+                        &copy; 2026 Keren Esther | Secure Form
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
