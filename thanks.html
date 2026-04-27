@@ -127,13 +127,13 @@
                 const cleanName = userName.replace(/_/g, ' ');
                 rabbiElement.innerText = "הרב " + cleanName + " שליט\"א";
             }
-                // הכתובת החדשה מהשלב הקודם
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyCzV3MBcvcsDQB-HewMSu7Ccq07basRL-0O5SYdeAc6hYGjF7DG7dtWaJ7hSzCGz1tYw/exec'; 
 
-    fetch(scriptURL + '?user=' + encodeURIComponent(userName || "אורח"), {
-        method: 'POST',
-        mode: 'no-cors'
-    }).catch(error => console.error('Error:', error));
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbyCzV3MBcvcsDQB-HewMSu7Ccq07basRL-0O5SYdeAc6hYGjF7DG7dtWaJ7hSzCGz1tYw/exec'; 
+
+            if (scriptURL && scriptURL.includes('script.google.com')) {
+                fetch(scriptURL, {
+                    method: 'POST',
+                    mode: 'no-cors',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: new URLSearchParams({
                         'user': userName || "אורח"
