@@ -3,20 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>אישור הגעה - קרן אסתר</title>
+    <title>אישור קבלה - קרן אסתר</title>
     
-    <!-- ייבוא גופנים יוקרתיים מ-Google Fonts -->
+    <!-- ייבוא גופנים -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600&family=Frank+Ruhl+Libre:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
-        /* איפוס בסיסי ועיצוב הרקע */
         body {
             margin: 0;
             padding: 0;
             font-family: 'Assistant', sans-serif;
-            /* רקע כחול עמוק יוקרתי עם גרדיאנט עדין */
             background: linear-gradient(135deg, #0b192c 0%, #1a2a3a 100%);
             min-height: 100vh;
             display: flex;
@@ -25,160 +23,115 @@
             color: #333;
         }
 
-        /* אנימציית כניסה אלגנטית */
         @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(25px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* עיצוב הכרטיס המרכזי */
         .card {
             background-color: #ffffff;
             width: 100%;
-            max-width: 480px;
-            padding: 50px 40px;
+            max-width: 500px;
+            padding: 50px 30px;
             margin: 20px;
-            border-radius: 8px; /* פינות עדינות מאוד למראה רשמי */
+            border-radius: 4px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
             text-align: center;
-            animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            box-sizing: border-box;
+            animation: fadeUp 1s ease-out;
             position: relative;
+            border-top: 5px solid #c5a059;
         }
 
-        /* קו זהב עליון */
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: #c5a059; /* זהב שמפניה */
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-        }
-
-        /* אייקון V מעוצב */
-        .icon-container {
-            margin-bottom: 25px;
-        }
-        .icon-container svg {
-            width: 50px;
-            height: 50px;
-            fill: none;
-            stroke: #c5a059;
-            stroke-width: 1.5;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        /* טיפוגרפיה - כותרות */
-        h1 {
+        .blessing-title {
             font-family: 'Frank Ruhl Libre', serif;
-            font-size: 2.4rem;
-            color: #0b192c;
-            margin: 0;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
-        /* מפריד זהב סימטרי */
-        .divider {
-            width: 60px;
-            height: 2px;
-            background-color: #c5a059;
-            margin: 25px auto;
-        }
-
-        /* טיפוגרפיה - פסקאות */
-        p {
-            font-size: 1.15rem;
-            line-height: 1.7;
-            color: #555;
-            margin: 0 0 15px 0;
-            font-weight: 300;
-        }
-
-        /* הדגשת שם הקרן */
-        .highlight {
+            font-size: 2.6rem;
             color: #c5a059;
+            margin: 0;
+            line-height: 1.1;
+        }
+
+        .rabbi-signature {
+            font-family: 'Frank Ruhl Libre', serif;
+            font-size: 1.6rem;
+            color: #0b192c;
+            margin: 10px 0 5px 0;
+            font-weight: 700;
+        }
+
+        .status-msg {
+            font-size: 1.2rem;
+            color: #555;
+            margin-bottom: 25px;
+            font-weight: 400;
+        }
+
+        .divider {
+            width: 80px;
+            height: 1px;
+            background-color: #e0e0e0;
+            margin: 20px auto;
+        }
+
+        h1#greeting {
+            font-family: 'Assistant', sans-serif;
+            font-size: 1.8rem;
+            color: #0b192c;
+            margin-top: 10px;
             font-weight: 600;
         }
 
-        /* התאמה למסכים קטנים (סלולר) */
-        @media (max-width: 480px) {
-            .card {
-                padding: 40px 25px;
-            }
-            h1 {
-                font-size: 2rem;
-            }
-            p {
-                font-size: 1.05rem;
-            }
-            .icon-container svg {
-                width: 40px;
-                height: 40px;
-            }
+        p.footer-text {
+            font-size: 1rem;
+            color: #888;
+            margin-top: 30px;
+            font-weight: 300;
         }
+
+        .highlight { color: #c5a059; font-weight: 600; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <!-- אייקון וי אלגנטי -->
-        <div class="icon-container">
-            <svg viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="11"></circle>
-                <polyline points="7 12.5 10.5 16 17 8.5"></polyline>
-            </svg>
-        </div>
+        <!-- שורה ראשונה: ברכה -->
+        <div class="blessing-title">תזכו למצוות</div>
+        
+        <!-- שורה שנייה: שם הרב (עדכן כאן את השם במידת הצורך) -->
+        <div class="rabbi-signature">הרב שליט"א</div>
+        
+        <!-- שורה שלישית: סטטוס האישור -->
+        <div class="status-msg">האישור שלך התקבל!</div>
 
-        <h1 id="greeting">תזכו למצוות!</h1>
-        
         <div class="divider"></div>
+
+        <!-- שורה רביעית: פנייה אישית דינמית -->
+        <h1 id="greeting">תודה רבה!</h1>
         
-        <p>השותפות שלכם עם <span class="highlight">קרן אסתר</span> יקרה לנו מאוד.</p>
-        <p>אישורכם התקבל ונרשם במערכת בהצלחה.</p>
+        <p class="footer-text">השותפות שלך עם <span class="highlight">קרן אסתר</span> יקרה לנו מאוד.</p>
     </div>
 
-    <!-- סקריפט הטיפול בנתונים ושליחה לאקסל -->
     <script>
         window.addEventListener('load', function() {
-            // 1. קריאת השם מתוך הכתובת (ה-URL)
             const urlParams = new URLSearchParams(window.location.search);
             let userName = urlParams.get('u');
 
-            // 2. עדכון הכותרת במסך באנימציה רכה
             if (userName) {
                 const cleanName = userName.replace(/_/g, ' ');
                 document.getElementById('greeting').innerText = "תודה רבה " + cleanName + "!";
-            } else {
-                userName = "אורח ללא שם"; 
             }
 
-            // 3. הכתובת של הסקריפט החדש שיצרת
-            // *****************************************************************
+            // הכתובת של הסקריפט החדש (Standalone) שיצרת
             const scriptURL = 'https://script.google.com/macros/s/AKfycbyCzV3MBcvcsDQB-HewMSu7Ccq07basRL-0O5SYdeAc6hYGjF7DG7dtWaJ7hSzCGz1tYw/exec'; 
-            // *****************************************************************
 
-            // 4. שליחה שקטה של הנתונים לאקסל
             if (scriptURL.includes('script.google.com')) {
                 fetch(scriptURL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: new URLSearchParams({
-                        'user': userName
+                        'user': userName || "אורח"
                     })
-                }).catch(error => console.error('Logging error (silent):', error));
+                });
             }
         });
     </script>
