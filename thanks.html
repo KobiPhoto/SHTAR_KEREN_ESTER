@@ -2,10 +2,10 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- שורת המפתח לרספונסיביות בסלולר -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>אישור קבלה - קרן אסתר</title>
     
-    <!-- ייבוא גופנים יוקרתיים -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600&family=Frank+Ruhl+Libre:wght@400;700&display=swap" rel="stylesheet">
@@ -21,111 +21,113 @@
             justify-content: center;
             align-items: center;
             color: #333;
+            /* מונע גלילה מיותרת בנייד */
+            overflow-x: hidden;
         }
 
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .card {
             background-color: #ffffff;
-            width: 100%;
-            max-width: 500px;
-            padding: 60px 30px;
-            margin: 20px;
+            width: 92%; /* תופס כמעט את כל הרוחב בנייד */
+            max-width: 480px; /* אבל לא יותר מ-480 פיקסלים במחשב */
+            padding: 50px 25px;
+            margin: 20px auto;
             border-radius: 4px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.4);
             text-align: center;
-            animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: fadeUp 0.8s ease-out forwards;
             position: relative;
             border-top: 5px solid #c5a059;
+            box-sizing: border-box;
         }
 
-        /* סגנון לברכה הראשונה */
         .blessing-title {
             font-family: 'Frank Ruhl Libre', serif;
-            font-size: 2.8rem;
+            font-size: 2.5rem; /* גודל למחשב */
             color: #c5a059;
             margin: 0;
-            line-height: 1.2;
+            line-height: 1.1;
             font-weight: 700;
         }
 
-        /* סגנון לשם הרב - השורה הדינמית */
         .rabbi-signature {
             font-family: 'Frank Ruhl Libre', serif;
-            font-size: 1.8rem;
+            font-size: 1.7rem; /* גודל למחשב */
             color: #0b192c;
             margin: 15px 0;
             font-weight: 700;
-            min-height: 2.2rem;
+            line-height: 1.3;
+            word-wrap: break-word; /* מונע מהשם לצאת מהכרטיס */
         }
 
-        /* הודעת סטטוס */
         .status-msg {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             color: #2c3e50;
-            margin: 20px 0;
+            margin: 15px 0;
             font-weight: 400;
-            letter-spacing: 0.5px;
         }
 
         .divider {
-            width: 60px;
+            width: 50px;
             height: 1px;
             background-color: #d4af37;
-            margin: 30px auto;
-            opacity: 0.5;
+            margin: 25px auto;
+            opacity: 0.4;
         }
 
-        /* טקסט תחתון */
         p.footer-text {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             color: #555;
             margin: 0;
             font-weight: 300;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         .highlight { color: #c5a059; font-weight: 600; }
+
+        /* התאמות ספציפיות לטלפונים ניידים (מסכים קטנים מ-480px) */
+        @media (max-width: 480px) {
+            .card {
+                padding: 40px 20px; /* צמצום רווחים פנימיים */
+                width: 90%;
+            }
+            .blessing-title {
+                font-size: 2.1rem; /* הקטנת הברכה שתיכנס בשורה אחת */
+            }
+            .rabbi-signature {
+                font-size: 1.45rem; /* הקטנת שם הרב */
+            }
+            .status-msg {
+                font-size: 1.1rem;
+            }
+        }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <!-- שורה 1: ברכה קבועה -->
         <div class="blessing-title">תזכו למצוות</div>
-        
-        <!-- שורה 2: שם המשתמש מוטמע בתוך התואר -->
         <div class="rabbi-signature" id="rabbi-display">הרב שליט"א</div>
-        
-        <!-- שורה 3: סטטוס -->
         <div class="status-msg">האישור שלך התקבל!</div>
-
         <div class="divider"></div>
-
-        <!-- שורה 4: טקסט סיום -->
         <p class="footer-text">השותפות שלך עם <span class="highlight">קרן אסתר</span> יקרה לנו מאוד.</p>
     </div>
 
     <script>
         window.addEventListener('load', function() {
-            // 1. חילוץ השם מהכתובת
             const urlParams = new URLSearchParams(window.location.search);
             let userName = urlParams.get('u');
 
-            // 2. עדכון שורת הרב בצורה דינמית
             const rabbiElement = document.getElementById('rabbi-display');
             if (userName) {
                 const cleanName = userName.replace(/_/g, ' ');
                 rabbiElement.innerText = "הרב " + cleanName + " שליט\"א";
-            } else {
-                rabbiElement.innerText = "הרב שליט\"א";
             }
 
-            // 3. הכתובת של הסקריפט החדש (Standalone) שיצרת
-            // נא להדביק כאן את ה-URL שקיבלת מה-Deploy של הסקריפט החדש
             const scriptURL = 'https://script.google.com/macros/s/AKfycbyCzV3MBcvcsDQB-HewMSu7Ccq07basRL-0O5SYdeAc6hYGjF7DG7dtWaJ7hSzCGz1tYw/exec'; 
 
             if (scriptURL && scriptURL.includes('script.google.com')) {
@@ -136,7 +138,7 @@
                     body: new URLSearchParams({
                         'user': userName || "אורח"
                     })
-                }).catch(e => console.log("Silent log"));
+                });
             }
         });
     </script>
