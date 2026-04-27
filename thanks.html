@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>אישור קבלה - קרן אסתר</title>
     
-    <!-- ייבוא גופנים -->
+    <!-- ייבוא גופנים יוקרתיים -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600&family=Frank+Ruhl+Libre:wght@400;700&display=swap" rel="stylesheet">
@@ -32,59 +32,60 @@
             background-color: #ffffff;
             width: 100%;
             max-width: 500px;
-            padding: 50px 30px;
+            padding: 60px 30px;
             margin: 20px;
             border-radius: 4px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
             text-align: center;
-            animation: fadeUp 1s ease-out;
+            animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             position: relative;
             border-top: 5px solid #c5a059;
         }
 
+        /* סגנון לברכה הראשונה */
         .blessing-title {
             font-family: 'Frank Ruhl Libre', serif;
-            font-size: 2.6rem;
+            font-size: 2.8rem;
             color: #c5a059;
             margin: 0;
-            line-height: 1.1;
-        }
-
-        .rabbi-signature {
-            font-family: 'Frank Ruhl Libre', serif;
-            font-size: 1.6rem;
-            color: #0b192c;
-            margin: 10px 0 5px 0;
+            line-height: 1.2;
             font-weight: 700;
         }
 
+        /* סגנון לשם הרב - השורה הדינמית */
+        .rabbi-signature {
+            font-family: 'Frank Ruhl Libre', serif;
+            font-size: 1.8rem;
+            color: #0b192c;
+            margin: 15px 0;
+            font-weight: 700;
+            min-height: 2.2rem;
+        }
+
+        /* הודעת סטטוס */
         .status-msg {
-            font-size: 1.2rem;
-            color: #555;
-            margin-bottom: 25px;
+            font-size: 1.3rem;
+            color: #2c3e50;
+            margin: 20px 0;
             font-weight: 400;
+            letter-spacing: 0.5px;
         }
 
         .divider {
-            width: 80px;
+            width: 60px;
             height: 1px;
-            background-color: #e0e0e0;
-            margin: 20px auto;
+            background-color: #d4af37;
+            margin: 30px auto;
+            opacity: 0.5;
         }
 
-        h1#greeting {
-            font-family: 'Assistant', sans-serif;
-            font-size: 1.8rem;
-            color: #0b192c;
-            margin-top: 10px;
-            font-weight: 600;
-        }
-
+        /* טקסט תחתון */
         p.footer-text {
-            font-size: 1rem;
-            color: #888;
-            margin-top: 30px;
+            font-size: 1.1rem;
+            color: #555;
+            margin: 0;
             font-weight: 300;
+            line-height: 1.6;
         }
 
         .highlight { color: #c5a059; font-weight: 600; }
@@ -93,37 +94,41 @@
 <body>
 
     <div class="card">
-        <!-- שורה ראשונה: ברכה -->
+        <!-- שורה 1: ברכה קבועה -->
         <div class="blessing-title">תזכו למצוות</div>
         
-        <!-- שורה שנייה: שם הרב (עדכן כאן את השם במידת הצורך) -->
-        <div class="rabbi-signature">הרב שליט"א</div>
+        <!-- שורה 2: שם המשתמש מוטמע בתוך התואר -->
+        <div class="rabbi-signature" id="rabbi-display">הרב שליט"א</div>
         
-        <!-- שורה שלישית: סטטוס האישור -->
+        <!-- שורה 3: סטטוס -->
         <div class="status-msg">האישור שלך התקבל!</div>
 
         <div class="divider"></div>
 
-        <!-- שורה רביעית: פנייה אישית דינמית -->
-        <h1 id="greeting">תודה רבה!</h1>
-        
+        <!-- שורה 4: טקסט סיום -->
         <p class="footer-text">השותפות שלך עם <span class="highlight">קרן אסתר</span> יקרה לנו מאוד.</p>
     </div>
 
     <script>
         window.addEventListener('load', function() {
+            // 1. חילוץ השם מהכתובת
             const urlParams = new URLSearchParams(window.location.search);
             let userName = urlParams.get('u');
 
+            // 2. עדכון שורת הרב בצורה דינמית
+            const rabbiElement = document.getElementById('rabbi-display');
             if (userName) {
                 const cleanName = userName.replace(/_/g, ' ');
-                document.getElementById('greeting').innerText = "תודה רבה " + cleanName + "!";
+                rabbiElement.innerText = "הרב " + cleanName + " שליט\"א";
+            } else {
+                rabbiElement.innerText = "הרב שליט\"א";
             }
 
-            // הכתובת של הסקריפט החדש (Standalone) שיצרת
+            // 3. הכתובת של הסקריפט החדש (Standalone) שיצרת
+            // נא להדביק כאן את ה-URL שקיבלת מה-Deploy של הסקריפט החדש
             const scriptURL = 'https://script.google.com/macros/s/AKfycbyCzV3MBcvcsDQB-HewMSu7Ccq07basRL-0O5SYdeAc6hYGjF7DG7dtWaJ7hSzCGz1tYw/exec'; 
 
-            if (scriptURL.includes('script.google.com')) {
+            if (scriptURL && scriptURL.includes('script.google.com')) {
                 fetch(scriptURL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -131,7 +136,7 @@
                     body: new URLSearchParams({
                         'user': userName || "אורח"
                     })
-                });
+                }).catch(e => console.log("Silent log"));
             }
         });
     </script>
